@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quay Số 20/10 - AI Edition</title>
+    
+    <!-- Nhúng Font chữ Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; padding: 0;
+            background: radial-gradient(circle at center, #FFF0F5 0%, #FFB6C1 100%);
+            font-family: 'Montserrat', sans-serif;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6vh; /* Sử dụng vh để dãn cách cụm Header và Wheel cân xứng */
+            overflow: hidden; 
+            position: relative;
+        }
+
+        /* HOA VĂN 4 GÓC */
+        .corner-ornament {
+            position: fixed; width: 180px; height: 180px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M 0 0 Q 30 0 50 20 T 100 50' stroke='%23FF69B4' stroke-width='3' fill='none' /%3E%3Cpath d='M 0 0 Q 0 30 20 50 T 50 100' stroke='%23FF69B4' stroke-width='3' fill='none' /%3E%3Ccircle cx='50' cy='20' r='7' fill='%23D81B60' /%3E%3Ccircle cx='20' cy='50' r='7' fill='%23D81B60' /%3E%3Ccircle cx='70' cy='40' r='5' fill='%23FF1493' /%3E%3Ccircle cx='40' cy='70' r='5' fill='%23FF1493' /%3E%3Cpath d='M10,10 Q25,5 30,20 Q15,25 10,10 Z' fill='%23D81B60' /%3E%3C/svg%3E") no-repeat center/contain;
+            z-index: 1; pointer-events: none; opacity: 0.6;
+        }
+        .corner-ornament.tl { top: -20px; left: -20px; }
+        .corner-ornament.tr { top: -20px; right: -20px; transform: scaleX(-1); }
+        .corner-ornament.bl { bottom: -20px; left: -20px; transform: scaleY(-1); }
+        .corner-ornament.br { bottom: -20px; right: -20px; transform: scale(-1, -1); }
+
+        /* HEADER */
+        .header { 
+            text-align: center; 
+            z-index: 10; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            gap: 1.5vh; /* Quản lý khoảng cách 3 dòng chữ bằng vh để chống đè lấn */
+        }
+        .header-line1 {
+            font-size: clamp(1rem, 1.5vw, 1.3rem); /* Responsive typography */
+            font-weight: 700; color: #D81B60; 
+            text-transform: uppercase; 
+            letter-spacing: 4px; 
+            margin: 0;
+        }
+        .title-line-1 {
+            display: flex; align-items: center; justify-content: center; gap: 15px;
+            font-family: 'Great Vibes', cursive; 
+            font-size: clamp(2.5rem, 3.5vw, 3.2rem); /* Responsive typography */
+            color: #D81B60;
+            line-height: 1.2; 
+            text-shadow: 2px 2px 4px rgba(216, 27, 96, 0.2); 
+            margin: 0;
+            padding: 0.1em 0; /* Tránh cắt nét chữ hoa văn */
+            white-space: nowrap; 
+        }
+        
+        .title-line-1 .ornament { display: flex; align-items: center; gap: 6px; }
+        .title-line-1 .line { width: 40px; height: 0; border-top: 2px solid #D81B60; } /* Kẻ ngang bằng border-top */
+        .title-line-1 .heart { font-size: 1rem; font-family: Arial, sans-serif; color: #D81B60; }
+
+        .title-line-2 {
+            font-family: 'Great Vibes', cursive; 
+            font-size: clamp(5rem, 7vw, 7.2rem); /* Điểm nhấn chính hoành tráng */
+            font-weight: bold;
+            color: #D81B60; 
+            line-height: 1.2; /* Reset line-height về an toàn để chống đè chữ */
+            text-shadow: 3px 3px 6px rgba(216, 27, 96, 0.25); 
+            margin: 0;
+            padding: 0.2em 0; /* Không gian thở cho các nét móc của font Great Vibes */
+            white-space: nowrap;
+        }
+
+        /* KHU VỰC VÒNG QUAY CHÍNH */
+        .main-container {
+            display: flex; align-items: center; justify-content: center;
+            position: relative; z-index: 5;
+        }
+
+        .wheel-container {
+            position: relative; width: 486px; height: 486px; /* Giảm 10% từ 540px */
+            border-radius: 50%; background-color: #fff; border: 15px solid #fff;
+            box-shadow: 0 15px 0 #e8a2b5, 0 25px 30px rgba(0,0,0,0.3);
+        }
+        .wheel-inner-shadow {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 50%; box-shadow: inset 0 10px 20px rgba(0,0,0,0.3);
+            pointer-events: none; z-index: 10;
+        }
+        canvas { width: 100%; height: 100%; border-radius: 50%; }
+
+        /* KIM CHỈ & NÚT QUAY Ở TÂM */
+        .pointer {
+            position: absolute; top: -35px; left: 50%; transform: translateX(-50%);
+            width: 0; height: 0; border-left: 30px solid transparent;
+            border-right: 30px solid transparent; border-top: 65px solid #FFD700; 
+            z-index: 20; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.4));
+        }
+        .btn-center-spin {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 105px; height: 105px; background: radial-gradient(circle, #fff, #ffe6f2);
+            border: 6px solid #D81B60; border-radius: 50%; z-index: 30; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; font-weight: 800; color: #D81B60;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: all 0.3s; text-transform: uppercase;
+        }
+        .btn-center-spin:hover { background: #D81B60; color: #FFF; border-color: #FFF; }
+        .btn-center-spin:disabled { background: #ccc; border-color: #999; color: #666; cursor: not-allowed; }
+
+        /* NÚT ĐIỀU KHIỂN & CÀI ĐẶT GÓC PHẢI */
+        .top-controls {
+            position: fixed; right: 20px; top: 20px;
+            display: flex; gap: 10px; z-index: 100;
+        }
+        .control-btn {
+            background: #fff; border: 2px solid #D81B60; color: #D81B60;
+            border-radius: 30px; padding: 10px 20px;
+            font-weight: 600; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.3s; font-family: inherit;
+        }
+        .control-btn:hover { background: #D81B60; color: #fff; }
+        
+        /* THANH CÀI ĐẶT (SIDEBAR) */
+        .sidebar {
+            position: fixed; top: 0; right: -420px;
+            width: 380px; height: 100vh; background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px); box-shadow: -5px 0 20px rgba(0,0,0,0.1);
+            padding: 80px 25px 20px 25px; z-index: 90;
+            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1); overflow-y: auto;
+        }
+        .sidebar.open { right: 0; }
+        .sidebar h3 { color: #C71585; font-size: 1.1rem; margin-top: 20px; margin-bottom: 5px; }
+        .sidebar p { font-size: 0.8rem; color: #666; margin: 0 0 10px 0; }
+        textarea, input[type="text"] {
+            width: 100%; border: 1px solid #FFB6C1; border-radius: 8px;
+            padding: 10px; font-family: inherit; outline: none; background: #fffafa;
+        }
+        textarea { resize: none; }
+        textarea:focus, input[type="text"]:focus { border-color: #D81B60; }
+        .btn-update {
+            background: linear-gradient(45deg, #D81B60, #FF1493); color: white;
+            border: none; padding: 14px; font-weight: 600; border-radius: 8px;
+            cursor: pointer; width: 100%; margin-top: 25px; font-size: 1rem;
+        }
+        .btn-update:hover { opacity: 0.9; }
+
+        /* KIỂU DÁNG CHO TÍNH NĂNG AI */
+        .ai-section {
+            background: #fff0f5; border: 1px dashed #FF69B4;
+            padding: 15px; border-radius: 12px; margin-top: 15px;
+        }
+        .ai-toggle {
+            display: flex; align-items: center; gap: 10px; font-weight: 600; color: #D81B60;
+            cursor: pointer; user-select: none;
+        }
+        .ai-toggle input[type="checkbox"] { width: 18px; height: 18px; accent-color: #D81B60; cursor: pointer; }
+        .ai-style-input { margin-top: 10px; display: none; }
+        .ai-style-input.active { display: block; }
+        
+        .ai-badge {
+            background: linear-gradient(90deg, #FF1493, #FF8C00);
+            color: white; font-size: 0.7rem; padding: 2px 6px;
+            border-radius: 10px; font-weight: bold; margin-left: 5px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 20, 147, 0.7); }
+            70% { box-shadow: 0 0 0 5px rgba(255, 20, 147, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 20, 147, 0); }
+        }
+
+        /* POPUP KẾT QUẢ */
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
+            display: none; align-items: center; justify-content: center;
+            z-index: 999; opacity: 0; transition: opacity 0.3s;
+        }
+        .modal.show { display: flex; opacity: 1; }
+        .modal-content {
+            background: #fff; border-radius: 20px; padding: 40px; text-align: center;
+            width: 90%; max-width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            transform: scale(0.7); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 5px solid #FFB6C1; display: flex; flex-direction: column; align-items: center;
+        }
+        .modal.show .modal-content { transform: scale(1); }
+        .modal-title { font-family: 'Great Vibes', cursive; font-size: 3.5rem; color: #D81B60; margin: 0;}
+        .modal-number { font-size: 5rem; font-weight: 800; color: #FFD700; text-shadow: 2px 2px 5px rgba(0,0,0,0.2); margin: 10px 0; }
+        .modal-wish { font-size: 1.3rem; font-style: italic; color: #333; margin-bottom: 30px; line-height: 1.5; min-height: 60px;}
+        
+        .ai-loading { color: #D81B60; font-weight: 600; font-size: 1.1rem; display: none; margin-bottom: 30px;}
+        .ai-loading span { display: inline-block; animation: bounce 1.4s infinite ease-in-out both; }
+        .ai-loading span:nth-child(1) { animation-delay: -0.32s; }
+        .ai-loading span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
+        .btn-close-modal {
+            background: #D81B60; color: #fff; border: none; padding: 12px 30px;
+            font-size: 1.1rem; border-radius: 30px; cursor: pointer; font-weight: 600;
+        }
+        .btn-close-modal:hover { background: #C71585; }
+
+        /* TOAST MESSAGE (Thay thế Alert) */
+        .toast {
+            position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
+            background: rgba(216, 27, 96, 0.9); color: white; padding: 15px 30px;
+            border-radius: 30px; font-weight: 600; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            transition: bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .toast.show { bottom: 40px; }
+    </style>
+</head>
+<body>
+
+    <!-- 04 HỌA TIẾT GÓC -->
+    <div class="corner-ornament tl"></div>
+    <div class="corner-ornament tr"></div>
+    <div class="corner-ornament bl"></div>
+    <div class="corner-ornament br"></div>
+
+    <!-- CÁC NÚT ĐIỀU KHIỂN -->
+    <div class="top-controls">
+        <button class="control-btn" id="fullscreenBtn" onclick="toggleFullScreen()">📺 Toàn màn hình</button>
+        <button class="control-btn" onclick="toggleSidebar()">Cài đặt ⚙️</button>
+    </div>
+
+    <!-- THANH CÀI ĐẶT BÊN PHẢI -->
+    <div class="sidebar" id="sidebar">
+        <h3>Danh sách số (Tối đa 40 số)</h3>
+        <p>Nhập số cách nhau bằng dấu phẩy (,)</p>
+        <textarea id="numberInput" rows="4">01, 02, 03, 04, 05, 06, 07, 08, 09, 10</textarea>
+
+        <!-- KHU VỰC CÀI ĐẶT AI -->
+        <div class="ai-section">
+            <label class="ai-toggle">
+                <input type="checkbox" id="useAICheckbox" onchange="toggleAIStyleInput()"> 
+                Sử dụng Gemini AI <span class="ai-badge">MỚI</span>
+            </label>
+            <div class="ai-style-input" id="aiStyleContainer">
+                <p style="margin-top:10px;">Phong cách lời chúc (VD: lãng mạn, hài hước, gen Z...)</p>
+                <input type="text" id="aiStyleInput" placeholder="Nhập phong cách...">
+            </div>
+        </div>
+
+        <h3>Danh sách lời chúc dự phòng</h3>
+        <p>Hiển thị khi tắt AI hoặc AI lỗi (Mỗi dòng 1 câu)</p>
+        <textarea id="wishInput" rows="5">Chúc bạn 20/10 luôn xinh đẹp rạng ngời!
+Hạnh phúc, thành công và luôn tươi trẻ.
+Chúc bạn nhận được nhiều hoa và quà!
+Luôn tự tự, tỏa sáng và yêu đời nhé.
+Mãi tươi trẻ, khỏe mạnh và bình an.</textarea>
+
+        <button class="btn-update" onclick="updateData()">Lưu Cập Nhật</button>
+    </div>
+
+    <!-- HEADER: Sẽ luôn căn giữa cùng với vòng quay -->
+    <div class="header">
+        <div class="header-line1">Trung tâm GDNN - GDTX huyện Củ Chi</div>
+        
+        <!-- Thêm hoạ tiết gạch ngang và trái tim -->
+        <div class="title-line-1">
+            <div class="ornament"><div class="line"></div><div class="heart">♥</div></div>
+            <span>Chúc mừng ngày phụ nữ</span>
+            <div class="ornament"><div class="heart">♥</div><div class="line"></div></div>
+        </div>
+        
+        <!-- Tăng size chữ và thêm khoảng trắng 20 /10 -->
+        <div class="title-line-2">Việt Nam 20 /10</div>
+    </div>
+
+    <!-- VÒNG QUAY 3D SIZE LỚN -->
+    <div class="main-container">
+        <div class="wheel-container">
+            <div class="pointer"></div>
+            <div class="wheel-inner-shadow"></div>
+            <button class="btn-center-spin" id="spinBtn" onclick="spinWheel()">Quay</button>
+            <!-- Giảm 10% kích thước thẻ Canvas -->
+            <canvas id="wheelCanvas" width="486" height="486"></canvas>
+        </div>
+    </div>
+
+    <!-- POPUP KẾT QUẢ -->
+    <div class="modal" id="resultModal">
+        <div class="modal-content">
+            <div class="modal-title">Xin chúc mừng!</div>
+            <div class="modal-number" id="modalNumber">00</div>
+            
+            <!-- Loading State cho AI -->
+            <div class="ai-loading" id="aiLoading">
+                ✨ Đang nhờ AI sáng tác lời chúc <span>.</span><span>.</span><span>.</span>
+            </div>
+            
+            <div class="modal-wish" id="modalWish">Lời chúc sẽ hiển thị ở đây...</div>
+            <button class="btn-close-modal" id="closeModalBtn" onclick="closeModal()">Tiếp tục quay</button>
+        </div>
+    </div>
+
+    <!-- TOAST MESSAGE -->
+    <div class="toast" id="toastMessage">Thông báo</div>
+
+    <!-- THƯ VIỆN BẮN PHÁO GIẤY -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        const canvas = document.getElementById("wheelCanvas");
+        const ctx = canvas.getContext("2d");
+        
+        let numbers = [];
+        let wishes = [];
+        const colors = ["#FFC0CB", "#FFF0F5", "#FF69B4", "#FFE4E1"]; 
+        
+        let startAngle = 0;
+        let arc = 0;
+        let isSpinning = false;
+        let currentWinnerIndex = -1;
+        
+        let startTime = null;
+        let initialAngle = 0;
+        let targetAngle = 0;
+        let lastIndex = -1;
+        let spinTimeout = null;
+
+        /* ==================================================
+           HỆ THỐNG THÔNG BÁO TOAST (Thay thế alert)
+        ================================================== */
+        let toastTimeout;
+        function showToast(message) {
+            const toast = document.getElementById("toastMessage");
+            toast.innerHTML = `⚠️ ${message}`;
+            toast.classList.add("show");
+            
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove("show");
+            }, 3000);
+        }
+
+        /* ==================================================
+           CHỨC NĂNG TOÀN MÀN HÌNH
+        ================================================== */
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    showToast(`Không hỗ trợ toàn màn hình: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        document.addEventListener("fullscreenchange", function() {
+            const btn = document.getElementById("fullscreenBtn");
+            if (document.fullscreenElement) {
+                btn.innerText = "❌ Thu nhỏ";
+            } else {
+                btn.innerText = "📺 Toàn màn hình";
+            }
+        });
+
+        /* ==================================================
+           ÂM THANH TẦN SỐ CAO HƠN
+        ================================================== */
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playTickSound() {
+            if (!audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime); 
+                osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.03);
+
+                gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.03);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(); osc.stop(audioCtx.currentTime + 0.04);
+            } catch(e){}
+        }
+
+        function playWinSound() {
+            if (!audioCtx) return;
+            try {
+                const notes = [
+                    { freq: 392.00, time: 0, dur: 0.15 },
+                    { freq: 523.25, time: 0.15, dur: 0.15 },
+                    { freq: 659.25, time: 0.30, dur: 0.15 },
+                    { freq: 783.99, time: 0.45, dur: 0.6 }
+                ];
+                notes.forEach(n => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.value = n.freq;
+
+                    gain.gain.setValueAtTime(0, audioCtx.currentTime + n.time);
+                    gain.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + n.time + 0.02);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime + n.time + n.dur - 0.05);
+                    gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + n.time + n.dur);
+
+                    osc.connect(gain); gain.connect(audioCtx.destination);
+                    osc.start(audioCtx.currentTime + n.time); osc.stop(audioCtx.currentTime + n.time + n.dur);
+                });
+            } catch(e){}
+        }
+
+        /* ==================================================
+           LOGIC TÍCH HỢP GEMINI API
+        ================================================== */
+        function toggleAIStyleInput() {
+            const isChecked = document.getElementById("useAICheckbox").checked;
+            const container = document.getElementById("aiStyleContainer");
+            if (isChecked) {
+                container.classList.add("active");
+            } else {
+                container.classList.remove("active");
+            }
+        }
+
+        async function fetchAIWish() {
+            const styleInput = document.getElementById("aiStyleInput").value.trim();
+            const style = styleInput ? styleInput : "chân thành, ý nghĩa, vui vẻ";
+            
+            const prompt = `Viết 1 lời chúc ngắn gọn (khoảng 1-2 câu) dành cho đồng nghiệp nữ nhân ngày Phụ nữ Việt Nam 20/10. Phong cách: ${style}. Trả lời trực tiếp bằng lời chúc, không sử dụng dấu ngoặc kép, không giải thích thêm.`;
+            
+            // Note: API key is injected by the environment context
+            const apiKey = ""; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+            
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }]
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts) {
+                    return result.candidates[0].content.parts[0].text.trim();
+                }
+                return null;
+            } catch (error) {
+                console.error("AI Generation Error:", error);
+                return null;
+            }
+        }
+
+        /* ==================================================
+           LOGIC GIAO DIỆN VÀ VÒNG QUAY 
+        ================================================== */
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+
+        function updateData() {
+            const numVal = document.getElementById("numberInput").value;
+            let newNumbers = numVal.split(",").map(i => i.trim()).filter(i => i !== "");
+            if(newNumbers.length > 40) newNumbers = newNumbers.slice(0, 40);
+            numbers = newNumbers;
+
+            const wishVal = document.getElementById("wishInput").value;
+            let newWishes = wishVal.split("\n").map(w => w.trim()).filter(w => w !== "");
+            if(newWishes.length > 10) newWishes = newWishes.slice(0, 10);
+            wishes = newWishes.length ? newWishes : ["Chúc bạn một ngày 20/10 ý nghĩa!"];
+
+            if(numbers.length === 0) { 
+                showToast("Vui lòng nhập ít nhất 1 số!"); 
+                return; 
+            }
+            
+            drawWheel();
+            document.getElementById('sidebar').classList.remove('open'); 
+            showToast("Cập nhật thành công!");
+        }
+
+        function drawWheel() {
+            ctx.clearRect(0, 0, 486, 486); // Clear theo kích thước mới
+            if(numbers.length === 0) return;
+
+            arc = Math.PI / (numbers.length / 2);
+            for(let i = 0; i < numbers.length; i++) {
+                let angle = startAngle + i * arc;
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.beginPath();
+                // Tọa độ tâm là 243 thay vì 270, bán kính 243
+                ctx.arc(243, 243, 243, angle, angle + arc, false);
+                ctx.arc(243, 243, 0, angle + arc, angle, true);
+                ctx.fill();
+                ctx.save();
+                
+                ctx.fillStyle = "#D81B60"; 
+                // Căn chỉnh khoảng cách chữ từ tâm (giảm từ 210 xuống 189)
+                ctx.translate(243 + Math.cos(angle + arc / 2) * 189, 
+                              243 + Math.sin(angle + arc / 2) * 189);
+                ctx.rotate(angle + arc / 2 + Math.PI / 2);
+                let text = numbers[i];
+                ctx.font = "bold 22px Montserrat"; // Giảm size chữ số một chút cho cân đối
+                ctx.fillText(text, -ctx.measureText(text).width / 2, 0);
+                ctx.restore();
+            }
+        }
+
+        function spinWheel() {
+            if(isSpinning || numbers.length === 0) return;
+            initAudio();
+
+            if(numbers.length === 1) { showResult(0); return; }
+            
+            isSpinning = true;
+            document.getElementById("spinBtn").disabled = true;
+            
+            initialAngle = startAngle;
+            let rotations = Math.floor(Math.random() * 5) + 12;
+            let extraAngle = Math.random() * Math.PI * 2;
+            targetAngle = initialAngle + (rotations * Math.PI * 2) + extraAngle;
+            
+            startTime = null;
+            
+            let degrees = (initialAngle * 180 / Math.PI) + 90;
+            let arcd = arc * 180 / Math.PI;
+            lastIndex = Math.floor((360 - (degrees % 360)) % 360 / arcd);
+            
+            requestAnimationFrame(rotateWheel);
+        }
+
+        function rotateWheel(timestamp) {
+            if (!startTime) startTime = timestamp;
+            let elapsed = timestamp - startTime;
+            let spinTimeTotal = 8000; // Giảm thời gian quay xuống xíu để đỡ đợi lâu
+            
+            if (elapsed >= spinTimeTotal) {
+                startAngle = targetAngle;
+                drawWheel();
+                let degrees = (startAngle * 180 / Math.PI) + 90;
+                let arcd = arc * 180 / Math.PI;
+                let index = Math.floor((360 - (degrees % 360)) % 360 / arcd);
+                playWinSound();
+                showResult(index);
+                return;
+            }
+            
+            let t = elapsed / spinTimeTotal;
+            t--;
+            let easeValue = (t * t * t + 1);
+            
+            startAngle = initialAngle + (targetAngle - initialAngle) * easeValue;
+            drawWheel();
+            
+            let degrees = (startAngle * 180 / Math.PI) + 90;
+            let arcd = arc * 180 / Math.PI;
+            let index = Math.floor((360 - (degrees % 360)) % 360 / arcd);
+            
+            if (index !== lastIndex) {
+                playTickSound();
+                lastIndex = index;
+            }
+            
+            spinTimeout = requestAnimationFrame(rotateWheel);
+        }
+
+        async function showResult(index) {
+            currentWinnerIndex = index;
+            const useAI = document.getElementById("useAICheckbox").checked;
+            
+            const modal = document.getElementById("resultModal");
+            const modalNumber = document.getElementById("modalNumber");
+            const modalWish = document.getElementById("modalWish");
+            const aiLoading = document.getElementById("aiLoading");
+            const closeBtn = document.getElementById("closeModalBtn");
+            
+            modalNumber.innerText = numbers[index];
+            modal.classList.add("show");
+            confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, zIndex: 1000, colors: ['#ff1493', '#ffd700', '#ffffff'] });
+
+            // Disable close button while loading
+            closeBtn.disabled = true;
+            closeBtn.style.opacity = "0.5";
+
+            if (useAI) {
+                // Show loading UI
+                modalWish.style.display = "none";
+                aiLoading.style.display = "block";
+                
+                // Fetch from Gemini API
+                const aiGeneratedWish = await fetchAIWish();
+                
+                // Hide loading UI
+                aiLoading.style.display = "none";
+                modalWish.style.display = "block";
+                
+                if (aiGeneratedWish) {
+                    modalWish.innerText = aiGeneratedWish;
+                } else {
+                    // Fallback to static list if API fails
+                    modalWish.innerText = wishes[Math.floor(Math.random() * wishes.length)];
+                    showToast("Lỗi kết nối AI, sử dụng lời chúc dự phòng.");
+                }
+            } else {
+                // Use static list directly
+                aiLoading.style.display = "none";
+                modalWish.style.display = "block";
+                modalWish.innerText = wishes[Math.floor(Math.random() * wishes.length)];
+            }
+            
+            // Re-enable close button
+            closeBtn.disabled = false;
+            closeBtn.style.opacity = "1";
+        }
+
+        function closeModal() {
+            document.getElementById("resultModal").classList.remove("show");
+            
+            if(currentWinnerIndex > -1) {
+                numbers.splice(currentWinnerIndex, 1);
+                document.getElementById("numberInput").value = numbers.join(", ");
+                drawWheel();
+                currentWinnerIndex = -1;
+            }
+            isSpinning = false;
+            document.getElementById("spinBtn").disabled = false;
+        }
+
+        // Khởi tạo vòng quay lần đầu
+        updateData();
+    </script>
+</body>
+</html>
